@@ -30,7 +30,10 @@ import zipkin2.storage.StorageComponent;
 // extracted as the type is huge
 public final class KafkaStorageBuilder extends StorageComponent.Builder {
   boolean spanConsumerEnabled = true;
-  boolean searchEnabled = true;
+  boolean aggregationEnabled = true;
+  boolean traceByIdQueryEnabled = true;
+  boolean traceSearchEnabled = true;
+  boolean dependencyQueryEnabled = true;
 
   List<String> autocompleteKeys = new ArrayList<>();
 
@@ -111,7 +114,7 @@ public final class KafkaStorageBuilder extends StorageComponent.Builder {
   }
 
   @Override public KafkaStorageBuilder searchEnabled(boolean searchEnabled) {
-    this.searchEnabled = searchEnabled;
+    this.traceSearchEnabled = searchEnabled;
     return this;
   }
 
@@ -121,13 +124,28 @@ public final class KafkaStorageBuilder extends StorageComponent.Builder {
     return this;
   }
 
-  /**
-   * Enable consuming spans from collectors, aggregation, and store them in Kafka topics.
-   *
-   * <p> When disabled, a NoopSpanConsumer is instantiated to do nothing with incoming spans.
-   */
   public KafkaStorageBuilder spanConsumerEnabled(boolean spanConsumerEnabled) {
     this.spanConsumerEnabled = spanConsumerEnabled;
+    return this;
+  }
+
+  public KafkaStorageBuilder aggregationEnabled(boolean aggregationEnabled) {
+    this.aggregationEnabled = aggregationEnabled;
+    return this;
+  }
+
+  public KafkaStorageBuilder traceByIdQueryEnabled(boolean traceByIdQueryEnabled) {
+    this.traceByIdQueryEnabled = traceByIdQueryEnabled;
+    return this;
+  }
+
+  public KafkaStorageBuilder traceSearchEnabled(boolean traceSearchEnabled) {
+    this.traceSearchEnabled = traceSearchEnabled;
+    return this;
+  }
+
+  public KafkaStorageBuilder dependencyQueryEnabled(boolean dependencyQueryEnabled) {
+    this.dependencyQueryEnabled = dependencyQueryEnabled;
     return this;
   }
 
