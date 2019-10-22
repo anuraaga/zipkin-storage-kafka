@@ -84,7 +84,7 @@ public class KafkaStorage extends StorageComponent {
   // Resources
   volatile AdminClient adminClient;
   volatile Producer<String, byte[]> producer;
-  volatile KafkaStreams traceAggregationStream, traceStoreStream, dependencyStoreStream;
+  volatile KafkaStreams aggregationStream, traceStoreStream, dependencyStoreStream;
   volatile Server server;
   volatile boolean closeCalled;
 
@@ -143,7 +143,7 @@ public class KafkaStorage extends StorageComponent {
     if (spanConsumerEnabled) {
       return new KafkaSpanConsumer(this);
     } else { // NoopSpanConsumer
-      return list -> Call.create(null);
+      return spans -> Call.create(null);
     }
   }
 
@@ -224,8 +224,8 @@ public class KafkaStorage extends StorageComponent {
       if (dependencyStoreStream != null) {
         dependencyStoreStream.close(Duration.ofSeconds(1));
       }
-      if (traceAggregationStream != null) {
-        traceAggregationStream.close(Duration.ofSeconds(1));
+      if (aggregationStream != null) {
+        aggregationStream.close(Duration.ofSeconds(1));
       }
       if (server != null) server.close();
     } catch (Exception | Error e) {
@@ -262,6 +262,7 @@ public class KafkaStorage extends StorageComponent {
           try {
             traceStoreStream = new KafkaStreams(traceStoreTopology, traceStoreStreamConfig);
             traceStoreStream.start();
+            LOG.info("Trace store topology: {}", traceStoreTopology.describe());
           } catch (Exception e) {
             LOG.debug("Error starting trace store process", e);
             traceStoreStream = null;
@@ -280,6 +281,7 @@ public class KafkaStorage extends StorageComponent {
             dependencyStoreStream =
                 new KafkaStreams(dependencyStoreTopology, dependencyStoreStreamConfig);
             dependencyStoreStream.start();
+            LOG.info("Dependency store topology: {}", dependencyStoreTopology.describe());
           } catch (Exception e) {
             LOG.debug("Error starting dependency store", e);
             dependencyStoreStream = null;
@@ -291,21 +293,21 @@ public class KafkaStorage extends StorageComponent {
   }
 
   KafkaStreams getAggregationStream() {
-    if (traceAggregationStream == null) {
+    if (aggregationStream == null) {
       synchronized (this) {
-        if (traceAggregationStream == null) {
+        if (aggregationStream == null) {
           try {
-            traceAggregationStream =
-                new KafkaStreams(aggregationTopology, aggregationStreamConfig);
-            traceAggregationStream.start();
+            aggregationStream = new KafkaStreams(aggregationTopology, aggregationStreamConfig);
+            aggregationStream.start();
+            LOG.info("Aggregation topology: {}", aggregationTopology.describe());
           } catch (Exception e) {
             LOG.debug("Error loading aggregation process", e);
-            traceAggregationStream = null;
+            aggregationStream = null;
           }
         }
       }
     }
-    return traceAggregationStream;
+    return aggregationStream;
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
@@ -333,7 +335,10 @@ public class KafkaStorage extends StorageComponent {
     return "KafkaStorage{" +
         "httpPort=" + httpPort +
         ", spanConsumerEnabled=" + spanConsumerEnabled +
-        //", searchEnabled=" + searchEnabled +
+        ", aggregationEnabled=" + aggregationEnabled +
+        ", traceByIdQueryEnabled=" + traceByIdQueryEnabled +
+        ", traceSearchEnabled=" + traceSearchEnabled +
+        ", dependencyQueryEnabled=" + dependencyQueryEnabled +
         ", storageDir='" + storageDir + '\'' +
         '}';
   }
