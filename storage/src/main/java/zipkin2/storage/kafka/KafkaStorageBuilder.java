@@ -29,8 +29,8 @@ import zipkin2.storage.StorageComponent;
 
 // extracted as the type is huge
 public final class KafkaStorageBuilder extends StorageComponent.Builder {
-  boolean spanConsumerEnabled = true;
-  boolean aggregationEnabled = true;
+  boolean spanPartitioningEnabled = true;
+  boolean spanAggregationEnabled = true;
   boolean traceByIdQueryEnabled = true;
   boolean traceSearchEnabled = true;
   boolean dependencyQueryEnabled = true;
@@ -125,7 +125,7 @@ public final class KafkaStorageBuilder extends StorageComponent.Builder {
   }
 
   public KafkaStorageBuilder spanConsumerEnabled(boolean spanConsumerEnabled) {
-    this.spanConsumerEnabled = spanConsumerEnabled;
+    this.spanPartitioningEnabled = spanConsumerEnabled;
     return this;
   }
 
@@ -134,7 +134,7 @@ public final class KafkaStorageBuilder extends StorageComponent.Builder {
    * produce traces and dependencies.
    */
   public KafkaStorageBuilder aggregationEnabled(boolean aggregationEnabled) {
-    this.aggregationEnabled = aggregationEnabled;
+    this.spanAggregationEnabled = aggregationEnabled;
     return this;
   }
 
